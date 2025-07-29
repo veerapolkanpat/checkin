@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>ระบบลงเวลาเข้า - ออกงาน</title>
+  <link href="https://fonts.googleapis.com/css2?family=Prompt&display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Prompt', sans-serif;
+      background: #f0f4f8;
+      padding: 20px;
+      text-align: center;
+    }
+    .container {
+      max-width: 500px;
+      margin: auto;
+      background: #fff;
+      padding: 2rem;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+    input, select, button {
+      width: 100%;
+      padding: 10px;
+      margin-top: 10px;
+      font-family: 'Prompt', sans-serif;
+      font-size: 1rem;
+    }
+    #status {
+      margin-top: 15px;
+      font-size: 1rem;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <img src="https://raw.githubusercontent.com/veerapolkanpat/checkin/main/logo.png" alt="logo" style="width: 180px;" />
+    <h2>📍 ระบบลงเวลาเข้า - ออกงาน</h2>
+
+    <input type="text" id="name" placeholder="ชื่อ - สกุล" required />
+    <select id="department" required>
+      <option value="">เลือกแผนก</option>
+      <option>พยาบาล</option>
+      <option>NA IPD</option>
+      <option>NA OPD</option>
+      <option>NA ER</option>
+      <option>X-RAY</option>
+      <option>เวชแผน</option>
+      <option>ยานยนต์</option>
+      <option>ห้องยา</option>
+      <option>เวชระเบียน</option>
+      <option>การเงิน</option>
+      <option>LAB</option>
+      <option>ซักฟอก</option>
+      <option>อุปกรณ์</option>
+      <option>โภชนาการ</option>
+      <option>แม่ครัว</option>
+      <option>แม่บ้านธุรการ</option>
+      <option>ซ่อมบำรุง</option>
+      <option>ส่งเสริมฯ</option>
+      <option>ธุรการ</option>
+    </select>
+
+    <button onclick="submitForm()">ลงเวลา</button>
+    <div id="status">⏳ กำลังตรวจสอบตำแหน่ง...</div>
+  </div>
+
+  <script>
+    let lat = null;
+    let lng = null;
+    const webAppURL = "https://script.google.com/macros/s/AKfycbyg4jch2INzw4iandvKgcrJUE-XrqyN_G7rZjCysbmB/dev"; // เปลี่ยนเป็นของคุณ
+
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        lat = pos.coords.latitude;
+        lng = pos.coords.longitude;
+        document.getElementById("status").innerText = "✅ ตรวจสอบพิกัดเรียบร้อย";
+      },
+      (err) => {
+        document.getElementById("status").innerText = "❌ ไม่สามารถดึงพิกัดได้: " + err.message;
+      }
+    );
+
+    function submitForm() {
+      const name = document.getElementById("name").value.trim();
+      const dept = document.getElementById("department").value;
+
+      if (!name || !dept) {
+        alert("กรุณากรอกชื่อและเลือกแผนก");
+        return;
+      }
+      if (lat === null || lng === null) {
+        alert("ยังไม่สามารถดึงพิกัดได้");
+        return;
+      }
+
+      fetch(webAppURL, {
+        method: "POST",
+        body: JSON.stringify({ name: name, department: dept, lat: lat, lng: lng }),
+        headers: { "Content-Type": "application/json" }
+      })
+      .then(res => res.json())
+      .then(data => {
+        document.getElementById("status").innerText = data.message;
+      })
+      .catch(err => {
+        document.getElementById("status").innerText = "❌ เกิดข้อผิดพลาด: " + err;
+      });
+    }
+  </script>
+</body>
+</html>
