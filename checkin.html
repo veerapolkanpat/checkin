@@ -1,56 +1,19 @@
 <!DOCTYPE html>
 <html lang="th">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>ระบบลงเวลาเข้า - ออกงาน</title>
-  <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@400;600&display=swap" rel="stylesheet">
-  <style>
-    body {
-      font-family: 'Prompt', sans-serif;
-      background: #f5f7fa;
-      text-align: center;
-      padding: 2rem;
-    }
-    .container {
-      background: white;
-      border-radius: 10px;
-      padding: 2rem;
-      max-width: 500px;
-      margin: auto;
-      box-shadow: 0 0 15px rgba(0,0,0,0.1);
-    }
-    h1 {
-      color: #007bff;
-    }
-    input, select, button {
-      font-family: inherit;
-      width: 100%;
-      margin: 10px 0;
-      padding: 10px;
-      font-size: 1rem;
-      border-radius: 5px;
-      border: 1px solid #ccc;
-    }
-    button {
-      background-color: #007bff;
-      color: white;
-      border: none;
-      cursor: pointer;
-    }
-    #status {
-      margin-top: 1rem;
-      font-weight: bold;
-    }
-  </style>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tailwindcss/forms/dist/forms.min.css">
+  <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body>
-  <div class="container">
-    <img src="https://raw.githubusercontent.com/veerapolkanpat/checkin/main/logo.png" alt="logo" style="max-width:180px; margin-bottom: 1rem;">
-    <h1>📌 ระบบลงเวลาเข้า - ออกงาน</h1>
+<body class="bg-gray-100 flex items-center justify-center h-screen">
+  <div class="bg-white p-8 rounded shadow-md w-full max-w-md">
+    <h1 class="text-2xl font-bold text-center mb-4">📍 ระบบลงเวลาเข้า - ออกงาน</h1>
 
-    <input type="text" id="name" placeholder="กรอกชื่อ-สกุล">
-    <select id="department">
+    <input type="text" id="name" placeholder="กรอกชื่อ-นามสกุล" class="w-full mb-4 p-2 border rounded" />
+
+    <select id="department" class="w-full mb-4 p-2 border rounded">
       <option value="">เลือกแผนก</option>
       <option>พยาบาล</option>
       <option>NA IPD</option>
@@ -58,13 +21,13 @@
       <option>NA ER</option>
       <option>X-RAY</option>
       <option>เวชแผล</option>
-      <option>ยายยนต์</option>
+      <option>ยานยนต์</option>
       <option>ห้องยา</option>
       <option>เวชระเบียน</option>
       <option>การเงิน</option>
       <option>LAB</option>
-      <option>อัพพาย</option>
-      <option>ซักฟอก</option>
+      <option>กายภาพ</option>
+      <option>อัฟฟอล</option>
       <option>โภชนาการ</option>
       <option>แม่ครัว</option>
       <option>แม่บ้านธุรการ</option>
@@ -73,89 +36,70 @@
       <option>ธุรการ</option>
     </select>
 
-    <button onclick="submitForm()">ลงเวลา</button>
-    <div id="status"></div>
+    <button onclick="checkin()" class="w-full bg-blue-500 text-white py-2 rounded hover:bg-blue-600">
+      ลงเวลา
+    </button>
+
+    <div id="status" class="mt-4 text-center text-sm"></div>
   </div>
 
   <script>
-    const scriptURL = "https://script.google.com/macros/s/AKfycbxh3jbfXaVvSvuyglXcNHVbYXGencUpn8AzZVZPccjMU_Odppgbs1gp2x30d8ycvDwlmQ/exec";
-    const allowedLat = 17.203563793916324;
-    const allowedLng = 102.43952852856776;
-    const allowedRadius = 100; // เมตร
-
-    function toRad(x) {
-      return x * Math.PI / 180;
-    }
-
-    function getDistance(lat1, lon1, lat2, lon2) {
-      const R = 6371000;
-      const dLat = toRad(lat2 - lat1);
-      const dLon = toRad(lon2 - lon1);
-      const a = Math.sin(dLat / 2) ** 2 +
-                Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) *
-                Math.sin(dLon / 2) ** 2;
-      const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-      return R * c;
-    }
-
-    function submitForm() {
+    async function checkin() {
       const name = document.getElementById("name").value.trim();
       const department = document.getElementById("department").value;
       const statusDiv = document.getElementById("status");
 
+      statusDiv.innerHTML = "⏳ กำลังส่งข้อมูล...";
       if (!name) {
-        statusDiv.innerHTML = "❌ กรุณากรอกชื่อก่อน";
+        statusDiv.innerHTML = "❌ กรุณากรอกชื่อเพื่อดำเนินการต่อ";
         return;
       }
       if (!department) {
-        statusDiv.innerHTML = "❌ กรุณาเลือกแผนก";
+        statusDiv.innerHTML = "❌ กรุณาเลือกแผนกก่อน";
         return;
       }
 
       if (!navigator.geolocation) {
-        statusDiv.innerHTML = "❌ เบราว์เซอร์ของคุณไม่รองรับการระบุตำแหน่ง";
+        statusDiv.innerHTML = "❌ อุปกรณ์ของคุณไม่รองรับ GPS";
         return;
       }
 
-      statusDiv.innerHTML = "📍 กำลังตรวจสอบตำแหน่ง...";
-
       navigator.geolocation.getCurrentPosition(async (position) => {
-        const userLat = position.coords.latitude;
-        const userLng = position.coords.longitude;
-        const distance = getDistance(userLat, userLng, allowedLat, allowedLng);
+        const lat = position.coords.latitude;
+        const lng = position.coords.longitude;
 
-        if (distance > allowedRadius) {
-          statusDiv.innerHTML = `❌ คุณอยู่นอกพื้นที่ที่กำหนด (ห่าง ${distance.toFixed(1)} เมตร)`;
-          return;
-        }
-
-        statusDiv.innerHTML = "⏳ กำลังส่งข้อมูล...";
+        const formData = new URLSearchParams();
+        formData.append("name", name);
+        formData.append("department", department);
+        formData.append("lat", lat);
+        formData.append("lng", lng);
 
         try {
-          const response = await fetch(scriptURL, {
-            method: 'POST',
-            body: JSON.stringify({
-              name: name,
-              department: department,
-              lat: userLat,
-              lng: userLng
-            }),
+          const response = await fetch("https://script.google.com/macros/s/AKfycbxh3jbfXaVvSvuyglXcNHVbYXGencUpn8AzZVZPccjMU_Odppgbs1gp2x30d8ycvDwlmQ/exec", {
+            method: "POST",
             headers: {
-              'Content-Type': 'application/json'
-            }
+              "Content-Type": "application/x-www-form-urlencoded",
+            },
+            body: formData.toString(),
           });
 
           const result = await response.json();
           if (result.status === "success") {
-            statusDiv.innerHTML = "✅ ลงเวลาสำเร็จ";
+            statusDiv.innerHTML = "✅ " + result.message;
+            statusDiv.classList.remove("text-red-500");
+            statusDiv.classList.add("text-green-500");
           } else {
-            statusDiv.innerHTML = `❌ ${result.message}`;
+            statusDiv.innerHTML = "❌ " + result.message;
+            statusDiv.classList.remove("text-green-500");
+            statusDiv.classList.add("text-red-500");
           }
-        } catch (err) {
-          statusDiv.innerHTML = "❌ เกิดข้อผิดพลาด: " + err.message;
+        } catch (error) {
+          statusDiv.innerHTML = "❌ เกิดข้อผิดพลาด: " + error;
+          statusDiv.classList.add("text-red-500");
         }
-      }, (error) => {
-        statusDiv.innerHTML = "❌ ไม่สามารถดึงพิกัด: " + error.message;
+      }, () => {
+        statusDiv.innerHTML = "❌ ไม่สามารถดึงตำแหน่ง GPS ได้ กรุณาเปิดตำแหน่ง";
+        statusDiv.classList.add("text-red-500");
       });
     }
   </script>
